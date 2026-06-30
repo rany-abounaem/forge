@@ -48,14 +48,21 @@ func (m *Manager) Create(name, cwd string) (*Session, error) {
 	shell := os.Getenv("SHELL")
 	var shellArgs []string
 	if shell == "" {
-		if ps, err := exec.LookPath("powershell.exe"); err == nil {
-			shell = ps
-
-			shellArgs = []string{"-NoProfile", "-NoExit"}
-		} else if comspec := os.Getenv("COMSPEC"); comspec != "" {
-			shell = comspec
+		if runtime.GOOS == "windows" {
+			if ps, err := exec.LookPath("powershell.exe"); err == nil {
+				shell = ps
+				shellArgs = []string{"-NoProfile", "-NoExit"}
+			} else if comspec := os.Getenv("COMSPEC"); comspec != "" {
+				shell = comspec
+			} else {
+				shell = "cmd.exe"
+			}
 		} else {
-			shell = "cmd.exe"
+			if sh, err := exec.LookPath("bash"); err == nil {
+				shell = sh
+			} else {
+				shell = "/bin/sh"
+			}
 		}
 	}
 	log.Printf("terminal: starting shell %s %s", shell, strings.Join(shellArgs, " "))
