@@ -1,5 +1,3 @@
-// Package watcher watches a directory tree for file system changes and
-// broadcasts JSON events to all connected WebSocket clients.
 package watcher
 
 import (
@@ -13,36 +11,21 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Event is the JSON shape we send to the browser when a file changes.
-// The frontend uses Op to decide how to update the file tree.
 type Event struct {
-	Op   string `json:"op"`   // "create" | "write" | "delete" | "rename"
-	Path string `json:"path"` // absolute path of the affected file or directory
+	Op   string `json:"op"`
+	Path string `json:"path"`
 }
 
-// Watcher watches a directory tree and maintains a set of connected WebSocket
-// clients to notify when anything changes.
 type Watcher struct {
-	root string // the directory we are watching
+	root string
 
-	// clients is a set of active WebSocket connections.
-	// Go has no built-in Set type. A map[K]bool where the value is always true
-	// is the standard idiom — the key IS the set member, the bool is ignored.
 	clients map[*websocket.Conn]bool
 
-	// mu protects the clients map. We use a plain Mutex (not RWMutex) because
-	// the broadcast function both reads AND potentially deletes from the map
-	// in the same operation, which always requires an exclusive write lock.
 	mu sync.Mutex
 
-	// fsw is the underlying fsnotify watcher — the library that talks to the
-	// OS kernel (inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows).
 	fsw *fsnotify.Watcher
 }
 
-// New creates a Watcher rooted at the given directory, registers every
-// subdirectory with fsnotify so changes are detected recursively, and starts
-// the event loop goroutine.
 func New(root string) (*Watcher, error) {
 
 	fsw, err := fsnotify.NewWatcher()
@@ -76,17 +59,6 @@ func New(root string) (*Watcher, error) {
 	return w, nil
 }
 
-// run is the event loop. It reads from fsnotify's channels and broadcasts
-// to all connected WebSocket clients.
-//
-// fsnotify gives us two channels:
-//
-//	fsw.Events — file system events (create, write, delete, rename)
-//	fsw.Errors — errors from the OS watcher (e.g. a watched directory was deleted)
-//
-// The select statement waits until one of its cases is ready, then executes
-// that case. It then loops and waits again. This is the idiomatic Go pattern
-// for handling multiple event sources in a single goroutine.
 func (w *Watcher) run() {
 	for {
 		select {
@@ -123,8 +95,6 @@ func (w *Watcher) run() {
 	}
 }
 
-// broadcast sends data to every connected client.
-// Clients that have disconnected are detected by a write error and removed.
 func (w *Watcher) broadcast(data []byte) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
@@ -139,8 +109,6 @@ func (w *Watcher) broadcast(data []byte) {
 	}
 }
 
-// ServeClient registers a WebSocket connection as a broadcast target and blocks
-// until that client disconnects. Called from the HTTP handler for each new client.
 func (w *Watcher) ServeClient(conn *websocket.Conn) {
 
 	w.mu.Lock()
@@ -158,9 +126,6 @@ func (w *Watcher) ServeClient(conn *websocket.Conn) {
 	w.mu.Unlock()
 }
 
-// opString converts an fsnotify.Op bitflag to a plain string for the frontend.
-// fsnotify uses bit manipulation: a single Op value can technically represent
-// multiple operations ORed together, but in practice each event has one Op.
 func opString(op fsnotify.Op) string {
 	switch {
 	case op.Has(fsnotify.Create):

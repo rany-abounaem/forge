@@ -1,6 +1,3 @@
-// Package terminal owns the lifecycle of PTY sessions:
-// creating them, tracking them in memory, attaching WebSocket clients,
-// and cleaning up dead processes on startup.
 package terminal
 
 import (
@@ -22,24 +19,21 @@ import (
 	"forge/internal/db"
 )
 
-// Session holds everything needed to interact with one live terminal.
 type Session struct {
 	ID  string
-	Cmd *gopty.Cmd // the shell process, attached to the PTY
-	PTY gopty.Pty  // cross-platform PTY — implements io.ReadWriteCloser
+	Cmd *gopty.Cmd
+	PTY gopty.Pty
 
 	connMu sync.Mutex
 	conn   *websocket.Conn
 }
 
-// Manager holds all live sessions in a thread-safe map and owns the database handle.
 type Manager struct {
 	mu       sync.RWMutex
 	sessions map[string]*Session
 	db       *gorm.DB
 }
 
-// NewManager constructs a Manager and cleans up stale sessions from a previous run.
 func NewManager(database *gorm.DB) *Manager {
 	m := &Manager{
 		sessions: make(map[string]*Session),
@@ -49,8 +43,6 @@ func NewManager(database *gorm.DB) *Manager {
 	return m
 }
 
-// Create spawns a new shell inside a PTY, stores it in memory and SQLite,
-// and returns the new Session.
 func (m *Manager) Create(name, cwd string) (*Session, error) {
 
 	shell := os.Getenv("SHELL")
@@ -103,7 +95,6 @@ func (m *Manager) Create(name, cwd string) (*Session, error) {
 	return sess, nil
 }
 
-// Get retrieves a session by ID. Returns false if not found.
 func (m *Manager) Get(id string) (*Session, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -111,16 +102,12 @@ func (m *Manager) Get(id string) (*Session, bool) {
 	return sess, ok
 }
 
-// List returns all sessions from SQLite. Called by the frontend on load to
-// restore tab state across browser refreshes.
 func (m *Manager) List() []db.Session {
 	var sessions []db.Session
 	m.db.Find(&sessions)
 	return sessions
 }
 
-// Delete kills the shell process, closes the PTY, removes the session from the
-// in-memory map, and deletes the record from SQLite.
 func (m *Manager) Delete(id string) {
 	m.mu.Lock()
 	sess, ok := m.sessions[id]
@@ -134,8 +121,6 @@ func (m *Manager) Delete(id string) {
 	m.db.Delete(&db.Session{}, "id = ?", id)
 }
 
-// Attach connects a WebSocket to the session's PTY. Blocks until disconnect.
-// The PTY process keeps running after disconnection, ready for re-attachment.
 func (s *Session) Attach(conn *websocket.Conn) {
 	s.connMu.Lock()
 	if s.conn != nil {
@@ -185,13 +170,11 @@ func (s *Session) Attach(conn *websocket.Conn) {
 	s.connMu.Unlock()
 }
 
-// resizeMsg is the JSON shape sent by xterm.js when the terminal is resized.
 type resizeMsg struct {
 	Cols int `json:"cols"`
 	Rows int `json:"rows"`
 }
 
-// handleControl processes a JSON resize message from the WebSocket.
 func (s *Session) handleControl(data []byte) {
 	var msg resizeMsg
 	if err := json.Unmarshal(data, &msg); err != nil {
@@ -204,8 +187,6 @@ func (s *Session) handleControl(data []byte) {
 	s.PTY.Resize(msg.Cols, msg.Rows)
 }
 
-// cleanupDead removes SQLite records for shell processes that are no longer running.
-// Called once at startup so stale tabs don't appear in the UI after a server restart.
 func (m *Manager) cleanupDead() {
 	var sessions []db.Session
 	m.db.Find(&sessions)
@@ -222,10 +203,6 @@ func (m *Manager) cleanupDead() {
 	}
 }
 
-// isAlive checks whether the process with the given PID is still running.
-// On Unix, signal 0 tests process existence without delivering a real signal.
-// On Windows, PTY processes cannot be checked this way and don't survive
-// server restarts, so we always return false to trigger SQLite cleanup.
 func isAlive(pid int) bool {
 	if pid <= 0 {
 		return false

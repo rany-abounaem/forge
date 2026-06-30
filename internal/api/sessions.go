@@ -66,10 +66,6 @@ func deleteSession(w http.ResponseWriter, r *http.Request, mgr *terminal.Manager
 	respond(w, map[string]string{"status": "ok"})
 }
 
-// renameSession handles PATCH /api/sessions/{id}/name
-// Updates only the display name in SQLite — the PTY process is unaffected.
-// The parameter is named `database` (not `db`) so it doesn't shadow the
-// imported `db` package, which we need to reference db.Session{}.
 func renameSession(w http.ResponseWriter, r *http.Request, database *gorm.DB) {
 	id := chi.URLParam(r, "id")
 

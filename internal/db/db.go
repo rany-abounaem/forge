@@ -6,12 +6,6 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// Init opens the SQLite file at the given path and runs AutoMigrate.
-// It returns a *gorm.DB (pointer to the database handle) and an error.
-// The caller (main.go) is responsible for checking the error.
-//
-// Multiple return values are idiomatic Go — functions commonly return
-// (result, error) so the caller can handle both the happy path and failures.
 func Init(path string) (*gorm.DB, error) {
 
 	db, err := gorm.Open(sqlite.Open(path), &gorm.Config{

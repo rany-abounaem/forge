@@ -76,32 +76,24 @@ function TerminalView({ sessionId, isActive, onDead }: TerminalViewProps) {
 
     
     
+    let wsOpened = false
     let receivedData = false
+    let intentionalClose = false
 
     ws.onopen = () => {
-      
-      
+      wsOpened = true
       ws.send(JSON.stringify({ cols: term.cols, rows: term.rows }))
     }
 
     ws.onmessage = (event) => {
-      
-      
       if (event.data instanceof ArrayBuffer) {
         receivedData = true
         term.write(new Uint8Array(event.data))
       }
     }
 
-    
-    
-    
-    let intentionalClose = false
-
     ws.onclose = () => {
-      if (!intentionalClose && !receivedData) {
-        
-        
+      if (!intentionalClose && wsOpened && !receivedData) {
         onDead(sessionId)
       }
     }
@@ -374,7 +366,8 @@ export function TerminalPane() {
       } catch {
         return 
       }
-      if (!res.ok || signal.aborted) { await createSession(); return }
+      if (signal.aborted) return
+      if (!res.ok) { await createSession(); return }
 
       const existing: Array<{ id: string; name: string }> = await res.json()
       if (signal.aborted) return
