@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/rany-abounaem/forge/compare/v1.0.4...v1.0.5) (2026-06-30)
+
+
+### Bug Fixes
+
+* disable GHA layer cache to clear stale COPY layer ([6ef176d](https://github.com/rany-abounaem/forge/commit/6ef176dd8aea7ea52f824e6aee0360ab8cfbe1c1))
+
 ## [1.0.4](https://github.com/rany-abounaem/forge/compare/v1.0.3...v1.0.4) (2026-06-30)
 
 
