@@ -78,7 +78,7 @@ function TerminalView({ sessionId, isActive, onDead }: TerminalViewProps) {
     }, 0)
 
     term.onData((data) => {
-      if (ws?.readyState === WebSocket.OPEN) ws.send(data)
+      if (ws?.readyState === WebSocket.OPEN) ws.send(new TextEncoder().encode(data))
     })
 
     const observer = new ResizeObserver(() => {
