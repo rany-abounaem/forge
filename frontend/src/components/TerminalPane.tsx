@@ -34,107 +34,71 @@ function TerminalView({ sessionId, isActive, onDead }: TerminalViewProps) {
   useEffect(() => {
     if (!containerRef.current) return
 
-    
     const term = new Terminal({
-      theme: {
-        background:  '#0A0A0F',
-        foreground:  '#E2E8F0',
-        cursor:      '#A78BFA',
-        
-      },
-      fontFamily:   "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-      fontSize:     14,
-      lineHeight:   1.2,
-      cursorBlink:  true,
-      cursorStyle:  'block',
-      
+      theme: { background: '#0A0A0F', foreground: '#E2E8F0', cursor: '#A78BFA' },
+      fontFamily:      "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+      fontSize:        14,
+      lineHeight:      1.2,
+      cursorBlink:     true,
+      cursorStyle:     'block',
       allowProposedApi: true,
     })
-
     const fitAddon = new FitAddon()
-    
-    const webLinksAddon = new WebLinksAddon()
-
     term.loadAddon(fitAddon)
-    term.loadAddon(webLinksAddon)
-
-    
-    
-    
+    term.loadAddon(new WebLinksAddon())
     term.open(containerRef.current)
     fitAddon.fit()
-
     termRef.current = term
     fitRef.current  = fitAddon
 
-    
-    const ws = new WebSocket(`ws://${window.location.host}/ws/terminal/${sessionId}`)
-
-    
-    
-    ws.binaryType = 'arraybuffer'
-
-    
-    
-    let wsOpened = false
-    let receivedData = false
+    let ws: WebSocket | null = null
     let intentionalClose = false
+    let wsOpened     = false
+    let receivedData = false
 
-    ws.onopen = () => {
-      wsOpened = true
-      ws.send(JSON.stringify({ cols: term.cols, rows: term.rows }))
-    }
-
-    ws.onmessage = (event) => {
-      if (event.data instanceof ArrayBuffer) {
-        receivedData = true
-        term.write(new Uint8Array(event.data))
+    // Defer WebSocket creation by one tick so React StrictMode's synchronous
+    // cleanup can cancel the timer before any socket is opened. Only the second
+    // (real) invocation reaches the setTimeout callback and creates a connection.
+    const wsTimer = setTimeout(() => {
+      ws = new WebSocket(`ws://${window.location.host}/ws/terminal/${sessionId}`)
+      ws.binaryType = 'arraybuffer'
+      ws.onopen = () => {
+        wsOpened = true
+        ws!.send(JSON.stringify({ cols: term.cols, rows: term.rows }))
       }
-    }
-
-    ws.onclose = () => {
-      if (!intentionalClose && wsOpened && !receivedData) {
-        onDead(sessionId)
+      ws.onmessage = (event) => {
+        if (event.data instanceof ArrayBuffer) {
+          receivedData = true
+          term.write(new Uint8Array(event.data))
+        }
       }
-    }
+      ws.onclose = () => {
+        if (!intentionalClose && wsOpened && !receivedData) onDead(sessionId)
+      }
+    }, 0)
 
-    
-    
-    
     term.onData((data) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(data)
-      }
+      if (ws?.readyState === WebSocket.OPEN) ws.send(data)
     })
 
-    
-    
     const observer = new ResizeObserver(() => {
-      
       const el = containerRef.current
       if (!el || el.offsetWidth === 0 || el.offsetHeight === 0) return
-
       fitAddon.fit()
-
-      if (ws.readyState === WebSocket.OPEN) {
-        
-        
+      if (ws?.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ cols: term.cols, rows: term.rows }))
       }
     })
     observer.observe(containerRef.current)
 
-    
-    
-    
-    
     return () => {
       intentionalClose = true
+      clearTimeout(wsTimer)
       observer.disconnect()
-      ws.close()
-      term.dispose()    
+      ws?.close()
+      term.dispose()
     }
-  }, [sessionId]) 
+  }, [sessionId])
 
   
   
