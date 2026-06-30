@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/rany-abounaem/forge/compare/v1.0.5...v1.0.6) (2026-06-30)
+
+
+### Bug Fixes
+
+* add find debug to show what files are in /app after COPY ([22fd756](https://github.com/rany-abounaem/forge/commit/22fd756689af87656358988d83caea2866181156))
+
 ## [1.0.5](https://github.com/rany-abounaem/forge/compare/v1.0.4...v1.0.5) (2026-06-30)
 
 
