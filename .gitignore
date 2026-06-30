@@ -1,0 +1,11 @@
+forge.db
+forge.exe
+forge
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+*.exe
+*.test
+*.out

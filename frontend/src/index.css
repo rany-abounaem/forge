@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/*
+  Brand palette defined as CSS custom properties.
+  @theme registers them with Tailwind v4 so they can be used as
+  utility classes anywhere: bg-[--color-bg], text-[--color-accent], etc.
+*/
+@theme {
+  --color-bg:            #0A0A0F;
+  --color-surface:       #111118;
+  --color-elevated:      #1A1A26;
+  --color-border:        #2A2A3D;
+  --color-accent:        #A78BFA;
+  --color-accent-deep:   #7C3AED;
+  --color-accent-light:  #C4B5FD;
+  --color-text:          #E2E8F0;
+  --color-text-muted:    #94A3B8;
+  --color-text-disabled: #475569;
+  --color-status-green:  #34D399;
+  --color-status-yellow: #FBBF24;
+  --color-status-red:    #F87171;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent-deep); }
