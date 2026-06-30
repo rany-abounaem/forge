@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/rany-abounaem/forge/compare/v1.0.1...v1.0.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* add verbose go build output to diagnose CI failure ([e3e4ab2](https://github.com/rany-abounaem/forge/commit/e3e4ab228ceda24622b24c4b4b393df7282391f3))
+
 ## [1.0.1](https://github.com/rany-abounaem/forge/compare/v1.0.0...v1.0.1) (2026-06-30)
 
 
