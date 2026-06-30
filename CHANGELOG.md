@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.7](https://github.com/rany-abounaem/forge/compare/v1.0.6...v1.0.7) (2026-06-30)
+
+
+### Bug Fixes
+
+* remove find debug from Dockerfile, restore GHA cache ([5741edb](https://github.com/rany-abounaem/forge/commit/5741edbd518bf24e3891b3a2a5d331a85c481c18))
+* track cmd/forge/main.go and anchor gitignore forge pattern ([b0693a2](https://github.com/rany-abounaem/forge/commit/b0693a28ec4dd655fccd105b70c24cfd41ee3cc4))
+
 ## [1.0.6](https://github.com/rany-abounaem/forge/compare/v1.0.5...v1.0.6) (2026-06-30)
 
 
