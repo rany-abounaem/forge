@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/rany-abounaem/forge/compare/v1.0.3...v1.0.4) (2026-06-30)
+
+
+### Bug Fixes
+
+* remove bare 'forge' from .dockerignore ([5c2e5e2](https://github.com/rany-abounaem/forge/commit/5c2e5e2cc27e78f290fdf7815cfde1b5a48466c0))
+
 ## [1.0.3](https://github.com/rany-abounaem/forge/compare/v1.0.2...v1.0.3) (2026-06-30)
 
 
