@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/rany-abounaem/forge/compare/v1.0.2...v1.0.3) (2026-06-30)
+
+
+### Bug Fixes
+
+* anchor .dockerignore forge pattern to root only ([c64e48d](https://github.com/rany-abounaem/forge/commit/c64e48dd55df7c80eb30cacfb7d94ed5c088b59f))
+
 ## [1.0.2](https://github.com/rany-abounaem/forge/compare/v1.0.1...v1.0.2) (2026-06-30)
 
 
