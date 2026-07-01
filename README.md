@@ -4,7 +4,7 @@ A self-hosted, browser-based developer IDE. Open a browser, get a full editor wi
 
 ## Features
 
-- **File tree** — browse and open files from the server's working directory
+- **File tree** — browse and open files from the working directory
 - **Monaco editor** — the same editor that powers VS Code, with syntax highlighting
 - **Integrated terminal** — real PTY sessions via xterm.js (ConPTY on Windows, openpty on Unix)
 - **Multiple terminal tabs** — create, rename, and close sessions; they persist across browser refreshes
@@ -17,31 +17,53 @@ A self-hosted, browser-based developer IDE. Open a browser, get a full editor wi
 |----------|-------------------------------------------------|
 | Backend  | Go, chi router, gorilla/websocket, go-pty, GORM |
 | Database | SQLite (pure-Go, no CGO required)               |
-| Frontend | React 18, TypeScript, Vite                      |
+| Frontend | React 19, TypeScript, Vite                      |
 | Editor   | Monaco Editor                                   |
 | Terminal | xterm.js with FitAddon                          |
 
-## Requirements
+## Docker (recommended)
 
-- Go 1.21+
-- Node.js 18+
-
-## Run
+No Go or Node.js installation required. The image is published to GHCR on every release.
 
 ```bash
-# Install frontend dependencies (first time only)
-cd frontend && npm install && cd ..
-
-# Start the server (serves frontend at http://localhost:8080)
-go run ./cmd/forge
+docker run -p 8080:8080 -v /path/to/your/project:/workspace ghcr.io/rany-abounaem/forge:latest
 ```
 
-The server serves the Vite dev proxy in development. For a production build:
+Then open `http://localhost:8080`. The file tree and terminal operate on whatever folder you mount at `/workspace`.
+
+To persist the session database across container restarts, mount a volume for it:
+
+```bash
+docker run -p 8080:8080 \
+  -v /path/to/your/project:/workspace \
+  -v forge-data:/workspace/.forge \
+  ghcr.io/rany-abounaem/forge:latest
+```
+
+## Local development
+
+**Requirements:** Go 1.25+, Node.js 22+
+
+The backend and frontend run as separate processes. Both need to be running at the same time.
+
+```bash
+# Terminal 1 — Go API server on :8080
+go run ./cmd/forge
+
+# Terminal 2 — Vite dev server on :5173 (proxies /api and /ws to :8080)
+cd frontend && npm install && npm run dev
+```
+
+Open `http://localhost:5173`. Vite handles hot reload and proxies API requests to Go.
+
+### Production build (without Docker)
 
 ```bash
 cd frontend && npm run build && cd ..
-go run ./cmd/forge
+go run ./cmd/forge --dist frontend/dist
 ```
+
+Open `http://localhost:8080`. Go serves the built SPA and the API from a single process.
 
 ## Project structure
 
